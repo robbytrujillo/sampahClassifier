@@ -6,34 +6,63 @@
     <title>AI Pemilah Sampah</title>
     <link rel="stylesheet" href="style.css" />
 
+    <!-- Fontawesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      integrity="sha512-..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- TensorFlow & Teachable Machine -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   </head>
 
   <body>
     <div class="app">
-      <h1>♻️Sampah Classifier</h1>
-      <p>Deteksi Sampah dengan AI</p>
+      <h1>♻️ Sampah Classifier</h1>
+      <p class="subtitle">Deteksi Sampah dengan AI</p>
 
-      <input type="file" id="imageInput" accept="image/*" />
+      <!-- MODE UPLOAD -->
+      <div id="uploadMode">
+        <!-- <input type="file" id="imageInput" accept="image/*" /> -->
 
-      <div class="preview-box">
-        <img id="preview" hidden />
+        <div class="upload-wrapper">
+          <button id="uploadBtn" class="upload-btn">
+            <i class="fas fa-upload"></i>
+            Upload Gambar Sampah
+          </button>
+          <input type="file" id="imageInput" accept="image/*" hidden />
+        </div>
+
+        <div class="preview-box">
+          <img id="preview" hidden />
+        </div>
+
+        <button id="detectBtn">
+          <i class="fas fa-trash"></i>
+          Deteksi Sampah
+        </button>
       </div>
 
-      <button id="detectBtn">🔍 Deteksi Sampah</button>
+      <!-- MODE KAMERA -->
+      <div id="cameraMode" class="hidden">
+        <div class="preview-box">
+          <video id="webcam" autoplay playsinline></video>
+        </div>
+      </div>
 
-      <div id="result" class="result">⚠️ Silakan upload gambar</div>
-      <p>
-        Copyright &copy;
-        <span style="font-color: rgb(34, 68, 68)"
-          ><a
-            href="https://robbyilham.com/"
-            target="_blank"
-            style="color: rgb(10, 50, 50); text-decoration: none"
-            >robbyilham</a
-          ></span
-        >
+      <button id="cameraBtn">
+        <i class="fas fa-camera"></i>
+        Kamera Realtime
+      </button>
+
+      <div id="result" class="result">⚠️ Silakan pilih mode</div>
+
+      <p class="footer">
+        © <a href="https://robbyilham.com/" target="_blank">robbyilham</a>
       </p>
     </div>
 
