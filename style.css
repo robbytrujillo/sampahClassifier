@@ -1,18 +1,51 @@
+/* ===============================
+   RESET & GLOBAL
+================================ */
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #dae1dd, #f6fbf1);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* ===============================
+   CONTAINER APP
+================================ */
 .app {
   background: #fff;
+  width: 100%;
   max-width: 420px;
-  margin: 40px auto;
+  margin: 16px;
   padding: 20px;
   border-radius: 16px;
   text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
+/* ===============================
+   TITLE & TEXT
+================================ */
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* ===============================
+   FORM INPUT & BUTTON
+================================ */
 input,
 button {
   width: 100%;
@@ -20,35 +53,126 @@ button {
   margin-top: 10px;
   border-radius: 10px;
   border: none;
+  font-size: 1rem;
+}
+
+input[type="file"] {
+  background: #f5f5f5;
 }
 
 button {
   background: #00c853;
   color: white;
-  font-size: 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
+button:hover {
+  background: #00b248;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* ===============================
+   IMAGE PREVIEW
+================================ */
 .preview-box {
   width: 100%;
-  height: 250px;
+  min-height: 180px;
+  max-height: 260px;
   background: #f2f2f2;
   margin-top: 15px;
   border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 .preview-box img {
-  max-width: 100%;
+  width: 100%;
+  height: auto;
   max-height: 100%;
   object-fit: contain;
+  border-radius: 10px;
 }
 
+/* ===============================
+   RESULT BOX
+================================ */
 .result {
   margin-top: 15px;
   background: #e8f5e9;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+/* ===============================
+   STATUS / INFO
+================================ */
+.status-success {
+  background: #e8f5e9;
+  color: #1b5e20;
   padding: 10px;
   border-radius: 10px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.status-warning {
+  background: #fff3e0;
+  color: #e65100;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+/* ===============================
+   MOBILE SMALL (HP KECIL)
+================================ */
+@media (max-width: 360px) {
+  .app {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  input,
+  button {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+
+  .preview-box {
+    min-height: 150px;
+  }
+}
+
+/* ===============================
+   TABLET & DESKTOP
+================================ */
+@media (min-width: 768px) {
+  .app {
+    max-width: 480px;
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 1.7rem;
+  }
+
+  .preview-box {
+    min-height: 260px;
+  }
 }
