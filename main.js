@@ -36,7 +36,7 @@ async function loadModel() {
     MODEL_URL + "model.json",
     MODEL_URL + "metadata.json",
   );
-  result.innerHTML = "✅ Model AI siap";
+  result.innerHTML = "✅ Model AI siap digunakan";
 }
 loadModel();
 
@@ -47,6 +47,7 @@ uploadBtn.addEventListener("click", () => imageInput.click());
 
 imageInput.addEventListener("change", (e) => {
   stopCamera();
+
   uploadMode.classList.remove("hidden");
   cameraMode.classList.add("hidden");
 
@@ -64,16 +65,16 @@ imageInput.addEventListener("change", (e) => {
 });
 
 /************************************************
- * DETEKSI GAMBAR
+ * DETEKSI GAMBAR (UPLOAD)
  ***********************************************/
 detectBtn.addEventListener("click", async () => {
   if (!model || !imageReady) {
-    result.innerHTML = "⚠️ Upload gambar dulu";
+    result.innerHTML = "⚠️ Upload gambar terlebih dahulu";
     return;
   }
 
   const predictions = await model.predict(preview);
-  showResult(predictions);
+  showResult(predictions, false);
 });
 
 /************************************************
@@ -82,7 +83,7 @@ detectBtn.addEventListener("click", async () => {
 cameraBtn.addEventListener("click", async () => {
   if (cameraActive) {
     stopCamera();
-    cameraBtn.innerText = "📷 Kamera Realtime";
+    cameraBtn.innerHTML = "📷 Kamera Realtime";
     uploadMode.classList.remove("hidden");
     cameraMode.classList.add("hidden");
     return;
@@ -98,16 +99,25 @@ cameraBtn.addEventListener("click", async () => {
 
   webcam.srcObject = stream;
   cameraActive = true;
-  cameraBtn.innerText = "⛔ Stop Kamera";
+  cameraBtn.innerHTML = "⛔ Stop Kamera";
 
   loopCamera();
 });
 
+/************************************************
+ * LOOP KAMERA (THROTTLE)
+ ***********************************************/
 async function loopCamera() {
   if (!cameraActive) return;
 
-  const predictions = await model.predict(webcam);
-  showResult(predictions);
+  const now = Date.now();
+
+  if (now - lastCameraPrediction > CAMERA_INTERVAL) {
+    lastCameraPrediction = now;
+
+    const predictions = await model.predict(webcam);
+    showResult(predictions, true);
+  }
 
   requestAnimationFrame(loopCamera);
 }
@@ -115,6 +125,7 @@ async function loopCamera() {
 function stopCamera() {
   if (stream) stream.getTracks().forEach((t) => t.stop());
   cameraActive = false;
+  confidenceBuffer = [];
 }
 
 /************************************************
@@ -134,11 +145,27 @@ function calculateHashingCoefficient(predictions) {
 /************************************************
  * TAMPILKAN HASIL
  ***********************************************/
-function showResult(predictions) {
+function showResult(predictions, fromCamera = false) {
   predictions.sort((a, b) => b.probability - a.probability);
 
   const top = predictions[0];
-  const confidence = (top.probability * 100).toFixed(2);
+  let confidence = top.probability * 100;
+
+  // === SMOOTHING KHUSUS KAMERA ===
+  if (fromCamera) {
+    confidenceBuffer.push(confidence);
+
+    if (confidenceBuffer.length > SMOOTHING_WINDOW) {
+      confidenceBuffer.shift();
+    }
+
+    confidence =
+      confidenceBuffer.reduce((a, b) => a + b, 0) / confidenceBuffer.length;
+  } else {
+    confidenceBuffer = [];
+  }
+
+  confidence = confidence.toFixed(2);
   const hc = calculateHashingCoefficient(predictions);
 
   let html = `
@@ -153,7 +180,10 @@ function showResult(predictions) {
 
   result.innerHTML = html;
 
-  sendToSheet(top.className, confidence, hc);
+  // ⛔ hanya kirim ke Sheet saat upload
+  if (!fromCamera) {
+    sendToSheet(top.className, confidence, hc);
+  }
 }
 
 /************************************************
@@ -171,3 +201,12 @@ function sendToSheet(label, confidence, hc) {
     }),
   }).catch(() => {});
 }
+
+/************************************************
+ * KAMERA CONTROL
+ ***********************************************/
+let lastCameraPrediction = 0;
+const CAMERA_INTERVAL = 800; // ms (500–1500 recommended)
+
+let confidenceBuffer = [];
+const SMOOTHING_WINDOW = 5;
