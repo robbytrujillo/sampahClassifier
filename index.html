@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI Pemilah Sampah</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  </head>
+
+  <body>
+    <div class="app">
+      <h1>♻️ AI Pemilah Sampah</h1>
+      <p>Deteksi Sampah dengan AI</p>
+
+      <input type="file" id="imageInput" accept="image/*" />
+
+      <div class="preview-box">
+        <img id="preview" hidden />
+      </div>
+
+      <button id="detectBtn">🔍 Deteksi Sampah</button>
+
+      <div id="result" class="result">⚠️ Silakan upload gambar</div>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
