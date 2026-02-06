@@ -22,10 +22,10 @@ const cameraMode = document.getElementById("cameraMode");
 /************************************************
  * STATE
  ***********************************************/
-let model;
+let model = null;
 let imageReady = false;
 let cameraActive = false;
-let stream;
+let stream = null;
 
 /************************************************
  * LOAD MODEL
@@ -65,7 +65,7 @@ imageInput.addEventListener("change", (e) => {
 });
 
 /************************************************
- * DETEKSI GAMBAR (UPLOAD)
+ * DETEKSI GAMBAR
  ***********************************************/
 detectBtn.addEventListener("click", async () => {
   if (!model || !imageReady) {
@@ -81,6 +81,11 @@ detectBtn.addEventListener("click", async () => {
  * KAMERA REALTIME
  ***********************************************/
 cameraBtn.addEventListener("click", async () => {
+  if (!model) {
+    result.innerHTML = "⏳ Model belum siap";
+    return;
+  }
+
   if (cameraActive) {
     stopCamera();
     cameraBtn.innerHTML = "📷 Kamera Realtime";
@@ -89,6 +94,7 @@ cameraBtn.addEventListener("click", async () => {
     return;
   }
 
+  imageReady = false;
   uploadMode.classList.add("hidden");
   cameraMode.classList.remove("hidden");
 
@@ -111,7 +117,6 @@ async function loopCamera() {
   if (!cameraActive) return;
 
   const now = Date.now();
-
   if (now - lastCameraPrediction > CAMERA_INTERVAL) {
     lastCameraPrediction = now;
 
@@ -123,7 +128,10 @@ async function loopCamera() {
 }
 
 function stopCamera() {
-  if (stream) stream.getTracks().forEach((t) => t.stop());
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+    webcam.srcObject = null;
+  }
   cameraActive = false;
   confidenceBuffer = [];
 }
@@ -133,7 +141,6 @@ function stopCamera() {
  ***********************************************/
 function calculateHashingCoefficient(predictions) {
   const sorted = [...predictions].sort((a, b) => b.probability - a.probability);
-
   const max = sorted[0].probability;
   const avgOther =
     sorted.slice(1).reduce((s, p) => s + p.probability, 0) /
@@ -151,14 +158,11 @@ function showResult(predictions, fromCamera = false) {
   const top = predictions[0];
   let confidence = top.probability * 100;
 
-  // === SMOOTHING KHUSUS KAMERA ===
   if (fromCamera) {
     confidenceBuffer.push(confidence);
-
     if (confidenceBuffer.length > SMOOTHING_WINDOW) {
       confidenceBuffer.shift();
     }
-
     confidence =
       confidenceBuffer.reduce((a, b) => a + b, 0) / confidenceBuffer.length;
   } else {
@@ -180,7 +184,6 @@ function showResult(predictions, fromCamera = false) {
 
   result.innerHTML = html;
 
-  // ⛔ hanya kirim ke Sheet saat upload
   if (!fromCamera) {
     sendToSheet(top.className, confidence, hc);
   }
@@ -203,10 +206,10 @@ function sendToSheet(label, confidence, hc) {
 }
 
 /************************************************
- * KAMERA CONTROL
+ * CAMERA CONTROL
  ***********************************************/
 let lastCameraPrediction = 0;
-const CAMERA_INTERVAL = 800; // ms (500–1500 recommended)
+const CAMERA_INTERVAL = 800;
 
 let confidenceBuffer = [];
 const SMOOTHING_WINDOW = 5;
