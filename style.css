@@ -176,3 +176,17 @@ button:active {
 .progress-b3 {
   background: linear-gradient(90deg, #c62828, #ef5350);
 }
+
+/* ===============================
+   FREEZE BUTTON
+================================ */
+.freeze-btn {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  margin-top: 12px;
+  box-shadow: 0 6px 14px rgba(255, 152, 0, 0.35);
+}
+
+.freeze-btn:active {
+  transform: scale(0.96);
+}

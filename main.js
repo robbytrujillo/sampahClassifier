@@ -12,8 +12,11 @@ const imageInput = document.getElementById("imageInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const preview = document.getElementById("preview");
 const webcam = document.getElementById("webcam");
+const snapshot = document.getElementById("snapshot");
+
 const detectBtn = document.getElementById("detectBtn");
 const cameraBtn = document.getElementById("cameraBtn");
+const freezeBtn = document.getElementById("freezeBtn");
 const result = document.getElementById("result");
 
 const uploadMode = document.getElementById("uploadMode");
@@ -74,7 +77,7 @@ imageInput.addEventListener("change", (e) => {
 });
 
 /************************************************
- * DETEKSI GAMBAR (UPLOAD)
+ * DETEKSI UPLOAD
  ***********************************************/
 detectBtn.addEventListener("click", async () => {
   if (!model || !imageReady) {
@@ -90,20 +93,14 @@ detectBtn.addEventListener("click", async () => {
  * KAMERA REALTIME
  ***********************************************/
 cameraBtn.addEventListener("click", async () => {
-  if (!model) {
-    result.innerHTML = "⏳ Model belum siap";
-    return;
-  }
-
   if (cameraActive) {
     stopCamera();
-    cameraBtn.innerHTML = "📷 Kamera Realtime";
     uploadMode.classList.remove("hidden");
     cameraMode.classList.add("hidden");
+    cameraBtn.innerHTML = "📷 Kamera Realtime";
     return;
   }
 
-  imageReady = false;
   uploadMode.classList.add("hidden");
   cameraMode.classList.remove("hidden");
 
@@ -120,7 +117,7 @@ cameraBtn.addEventListener("click", async () => {
 });
 
 /************************************************
- * LOOP KAMERA (THROTTLE)
+ * LOOP KAMERA
  ***********************************************/
 async function loopCamera() {
   if (!cameraActive) return;
@@ -136,6 +133,35 @@ async function loopCamera() {
   requestAnimationFrame(loopCamera);
 }
 
+/************************************************
+ * FREEZE + SCREENSHOT
+ ***********************************************/
+freezeBtn.addEventListener("click", async () => {
+  if (!cameraActive) return;
+
+  snapshot.width = webcam.videoWidth;
+  snapshot.height = webcam.videoHeight;
+
+  const ctx = snapshot.getContext("2d");
+  ctx.drawImage(webcam, 0, 0);
+
+  preview.src = snapshot.toDataURL("image/png");
+  preview.hidden = false;
+
+  stopCamera();
+
+  uploadMode.classList.remove("hidden");
+  cameraMode.classList.add("hidden");
+
+  const predictions = await model.predict(preview);
+  showResult(predictions, false);
+
+  result.innerHTML += "<br>📸 Kamera dibekukan";
+});
+
+/************************************************
+ * STOP CAMERA
+ ***********************************************/
 function stopCamera() {
   if (stream) {
     stream.getTracks().forEach((t) => t.stop());
@@ -181,14 +207,17 @@ function showResult(predictions, fromCamera = false) {
   confidence = confidence.toFixed(2);
   const hc = calculateHashingCoefficient(predictions);
 
+  const labelClass = top.className.toLowerCase();
+
   let html = `
     🏷️ <b>${top.className}</b><br>
     🎯 Confidence: ${confidence}%<br>
-    🔐 Hashing Coefficient: ${hc}%<hr>
+    🔐 Hashing Coefficient: ${hc}%
 
-    <div class="progress-wrapper">
-      <div class="progress-bar" style="width:${confidence}%"></div>
+    <div class="progress">
+      <div class="progress-bar ${labelClass}" style="width:${confidence}%"></div>
     </div>
+    <hr>
   `;
 
   predictions.forEach((p) => {
