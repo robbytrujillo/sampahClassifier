@@ -143,3 +143,36 @@ button:active {
 .hidden {
   display: none;
 }
+
+/* ===============================
+   CONFIDENCE PROGRESS BAR
+================================ */
+.progress-wrapper {
+  margin-top: 10px;
+  width: 100%;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 14px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00c853, #64dd17);
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+
+/* warna berbeda (opsional) */
+.progress-organik {
+  background: linear-gradient(90deg, #2e7d32, #66bb6a);
+}
+
+.progress-anorganik {
+  background: linear-gradient(90deg, #1565c0, #42a5f5);
+}
+
+.progress-b3 {
+  background: linear-gradient(90deg, #c62828, #ef5350);
+}

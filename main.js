@@ -28,6 +28,15 @@ let cameraActive = false;
 let stream = null;
 
 /************************************************
+ * CAMERA CONTROL
+ ***********************************************/
+let lastCameraPrediction = 0;
+const CAMERA_INTERVAL = 800;
+
+let confidenceBuffer = [];
+const SMOOTHING_WINDOW = 5;
+
+/************************************************
  * LOAD MODEL
  ***********************************************/
 async function loadModel() {
@@ -65,7 +74,7 @@ imageInput.addEventListener("change", (e) => {
 });
 
 /************************************************
- * DETEKSI GAMBAR
+ * DETEKSI GAMBAR (UPLOAD)
  ***********************************************/
 detectBtn.addEventListener("click", async () => {
   if (!model || !imageReady) {
@@ -176,6 +185,10 @@ function showResult(predictions, fromCamera = false) {
     🏷️ <b>${top.className}</b><br>
     🎯 Confidence: ${confidence}%<br>
     🔐 Hashing Coefficient: ${hc}%<hr>
+
+    <div class="progress-wrapper">
+      <div class="progress-bar" style="width:${confidence}%"></div>
+    </div>
   `;
 
   predictions.forEach((p) => {
@@ -204,12 +217,3 @@ function sendToSheet(label, confidence, hc) {
     }),
   }).catch(() => {});
 }
-
-/************************************************
- * CAMERA CONTROL
- ***********************************************/
-let lastCameraPrediction = 0;
-const CAMERA_INTERVAL = 800;
-
-let confidenceBuffer = [];
-const SMOOTHING_WINDOW = 5;
