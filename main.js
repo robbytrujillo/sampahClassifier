@@ -136,6 +136,29 @@ async function loopCamera() {
 /************************************************
  * FREEZE + SCREENSHOT
  ***********************************************/
+// freezeBtn.addEventListener("click", async () => {
+//   if (!cameraActive) return;
+
+//   snapshot.width = webcam.videoWidth;
+//   snapshot.height = webcam.videoHeight;
+
+//   const ctx = snapshot.getContext("2d");
+//   ctx.drawImage(webcam, 0, 0);
+
+//   preview.src = snapshot.toDataURL("image/png");
+//   preview.hidden = false;
+
+//   stopCamera();
+
+//   uploadMode.classList.remove("hidden");
+//   cameraMode.classList.add("hidden");
+
+//   const predictions = await model.predict(preview);
+//   showResult(predictions, false);
+
+//   result.innerHTML += "<br>📸 Kamera dibekukan";
+// });
+
 freezeBtn.addEventListener("click", async () => {
   if (!cameraActive) return;
 
@@ -143,7 +166,12 @@ freezeBtn.addEventListener("click", async () => {
   snapshot.height = webcam.videoHeight;
 
   const ctx = snapshot.getContext("2d");
-  ctx.drawImage(webcam, 0, 0);
+
+  // UN-MIRROR sebelum capture
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(webcam, -snapshot.width, 0, snapshot.width, snapshot.height);
+  ctx.restore();
 
   preview.src = snapshot.toDataURL("image/png");
   preview.hidden = false;

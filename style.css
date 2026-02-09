@@ -190,3 +190,8 @@ button:active {
 .freeze-btn:active {
   transform: scale(0.96);
 }
+
+/* Mirror video camera (UI only) */
+#webcam {
+  transform: scaleX(-1);
+}
