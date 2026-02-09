@@ -134,31 +134,8 @@ async function loopCamera() {
 }
 
 /************************************************
- * FREEZE + SCREENSHOT
+ * FREEZE + SCREENSHOT (FINAL & BENAR)
  ***********************************************/
-// freezeBtn.addEventListener("click", async () => {
-//   if (!cameraActive) return;
-
-//   snapshot.width = webcam.videoWidth;
-//   snapshot.height = webcam.videoHeight;
-
-//   const ctx = snapshot.getContext("2d");
-//   ctx.drawImage(webcam, 0, 0);
-
-//   preview.src = snapshot.toDataURL("image/png");
-//   preview.hidden = false;
-
-//   stopCamera();
-
-//   uploadMode.classList.remove("hidden");
-//   cameraMode.classList.add("hidden");
-
-//   const predictions = await model.predict(preview);
-//   showResult(predictions, false);
-
-//   result.innerHTML += "<br>📸 Kamera dibekukan";
-// });
-
 freezeBtn.addEventListener("click", async () => {
   if (!cameraActive) return;
 
@@ -167,12 +144,13 @@ freezeBtn.addEventListener("click", async () => {
 
   const ctx = snapshot.getContext("2d");
 
-  // UN-MIRROR sebelum capture
+  // UN-MIRROR agar sesuai tampilan
   ctx.save();
   ctx.scale(-1, 1);
   ctx.drawImage(webcam, -snapshot.width, 0, snapshot.width, snapshot.height);
   ctx.restore();
 
+  // tampilkan hasil freeze
   preview.src = snapshot.toDataURL("image/png");
   preview.hidden = false;
 
@@ -181,7 +159,8 @@ freezeBtn.addEventListener("click", async () => {
   uploadMode.classList.remove("hidden");
   cameraMode.classList.add("hidden");
 
-  const predictions = await model.predict(preview);
+  // 🔥 PREDIKSI DARI CANVAS (BUKAN IMG)
+  const predictions = await model.predict(snapshot);
   showResult(predictions, false);
 
   result.innerHTML += "<br>📸 Kamera dibekukan";
@@ -234,16 +213,14 @@ function showResult(predictions, fromCamera = false) {
 
   confidence = confidence.toFixed(2);
   const hc = calculateHashingCoefficient(predictions);
-
   const labelClass = top.className.toLowerCase();
 
   let html = `
     🏷️ <b>${top.className}</b><br>
     🎯 Confidence: ${confidence}%<br>
     🔐 Hashing Coefficient: ${hc}%
-
-    <div class="progress">
-      <div class="progress-bar ${labelClass}" style="width:${confidence}%"></div>
+    <div class="progress-wrapper">
+      <div class="progress-bar progress-${labelClass}" style="width:${confidence}%"></div>
     </div>
     <hr>
   `;
