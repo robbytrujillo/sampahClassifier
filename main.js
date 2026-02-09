@@ -22,6 +22,13 @@ const result = document.getElementById("result");
 const uploadMode = document.getElementById("uploadMode");
 const cameraMode = document.getElementById("cameraMode");
 
+const saveImageBtn = document.getElementById("saveImageBtn");
+const exportPdfBtn = document.getElementById("exportPdfBtn");
+
+const SCHOOL_LOGO = "assets/images/logo-smaihbs.png"; // atau base64
+
+const PRAKTIKUM_MODE = true;
+
 /************************************************
  * STATE
  ***********************************************/
@@ -29,6 +36,7 @@ let model = null;
 let imageReady = false;
 let cameraActive = false;
 let stream = null;
+let lastResult = null;
 
 /************************************************
  * CAMERA CONTROL
@@ -164,6 +172,25 @@ freezeBtn.addEventListener("click", async () => {
   showResult(predictions, false);
 
   result.innerHTML += "<br>📸 Kamera dibekukan";
+
+  exportPDF();
+});
+
+/************************************************
+ * SIMPAN SCREENSHOT
+ ***********************************************/
+saveImageBtn.addEventListener("click", () => {
+  if (!snapshot.width) {
+    alert("⚠️ Belum ada screenshot");
+    return;
+  }
+
+  const link = document.createElement("a");
+  const label = result.querySelector("b")?.innerText || "hasil";
+
+  link.download = `hasil-sampah_${label}_${Date.now()}.png`;
+  link.href = snapshot.toDataURL("image/png");
+  link.click();
 });
 
 /************************************************
@@ -194,6 +221,48 @@ function calculateHashingCoefficient(predictions) {
 /************************************************
  * TAMPILKAN HASIL
  ***********************************************/
+// function showResult(predictions, fromCamera = false) {
+//   predictions.sort((a, b) => b.probability - a.probability);
+
+//   const top = predictions[0];
+//   let confidence = top.probability * 100;
+
+//   if (fromCamera) {
+//     confidenceBuffer.push(confidence);
+//     if (confidenceBuffer.length > SMOOTHING_WINDOW) {
+//       confidenceBuffer.shift();
+//     }
+//     confidence =
+//       confidenceBuffer.reduce((a, b) => a + b, 0) / confidenceBuffer.length;
+//   } else {
+//     confidenceBuffer = [];
+//   }
+
+//   confidence = confidence.toFixed(2);
+//   const hc = calculateHashingCoefficient(predictions);
+//   const labelClass = top.className.toLowerCase();
+
+//   let html = `
+//     🏷️ <b>${top.className}</b><br>
+//     🎯 Confidence: ${confidence}%<br>
+//     🔐 Hashing Coefficient: ${hc}%
+//     <div class="progress-wrapper">
+//       <div class="progress-bar progress-${labelClass}" style="width:${confidence}%"></div>
+//     </div>
+//     <hr>
+//   `;
+
+//   predictions.forEach((p) => {
+//     html += `${p.className}: ${(p.probability * 100).toFixed(2)}%<br>`;
+//   });
+
+//   result.innerHTML = html;
+
+//   if (!fromCamera) {
+//     sendToSheet(top.className, confidence, hc);
+//   }
+// }
+
 function showResult(predictions, fromCamera = false) {
   predictions.sort((a, b) => b.probability - a.probability);
 
@@ -213,25 +282,32 @@ function showResult(predictions, fromCamera = false) {
 
   confidence = confidence.toFixed(2);
   const hc = calculateHashingCoefficient(predictions);
-  const labelClass = top.className.toLowerCase();
 
-  let html = `
-    🏷️ <b>${top.className}</b><br>
-    🎯 Confidence: ${confidence}%<br>
-    🔐 Hashing Coefficient: ${hc}%
-    <div class="progress-wrapper">
-      <div class="progress-bar progress-${labelClass}" style="width:${confidence}%"></div>
-    </div>
-    <hr>
-  `;
-
+  let detailText = "";
   predictions.forEach((p) => {
-    html += `${p.className}: ${(p.probability * 100).toFixed(2)}%<br>`;
+    detailText += `${p.className}: ${(p.probability * 100).toFixed(2)}%\n`;
   });
 
-  result.innerHTML = html;
+  // SIMPAN HASIL TERAKHIR (UNTUK PDF & HISTORI)
+  lastResult = {
+    label: top.className,
+    confidence,
+    hc,
+    details: detailText,
+    time: new Date().toLocaleString(),
+    image: snapshot.toDataURL("image/png"),
+  };
+
+  // UI (boleh pakai emoji)
+  result.innerHTML = `
+    🏷️ <b>${top.className}</b><br>
+    🎯 Confidence: ${confidence}%<br>
+    🔐 Hashing Coefficient: ${hc}%<hr>
+    ${detailText.replaceAll("\n", "<br>")}
+  `;
 
   if (!fromCamera) {
+    saveHistory(lastResult);
     sendToSheet(top.className, confidence, hc);
   }
 }
@@ -250,4 +326,87 @@ function sendToSheet(label, confidence, hc) {
       waktu: new Date().toLocaleString(),
     }),
   }).catch(() => {});
+}
+
+/************************************************
+ * EXPORT PDF
+ ***********************************************/
+exportPdfBtn.addEventListener("click", async () => {
+  if (!snapshot.width) {
+    alert("⚠️ Belum ada hasil untuk diexport");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  const label = result.querySelector("b")?.innerText || "-";
+  // const text = result.innerText;
+
+  const cleanText = `
+    Label              : ${lastResult.label}
+    Confidence         : ${lastResult.confidence}%
+    Hashing Coefficient: ${lastResult.hc}%
+
+    Detail Probabilitas:
+    ${lastResult.details}
+  `;
+
+  // Judul
+  pdf.setFontSize(16);
+  pdf.text("Hasil Deteksi Sampah AI", 14, 15);
+
+  // Screenshot
+  const imgData = snapshot.toDataURL("image/png");
+  pdf.addImage(imgData, "PNG", 15, 25, 180, 100);
+
+  // Detail
+  pdf.setFontSize(11);
+  pdf.text("Detail Hasil:", 14, 135);
+  pdf.text(text, 14, 145);
+
+  // Footer
+  pdf.setFontSize(9);
+  pdf.text(`Generated: ${new Date().toLocaleString()}`, 14, 285);
+
+  pdf.save(`hasil-deteksi-${label}.pdf`);
+});
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  // LOGO
+  pdf.addImage(SCHOOL_LOGO, "PNG", 15, 10, 20, 20);
+
+  pdf.setFontSize(14);
+  pdf.text("LAPORAN HASIL DETEKSI SAMPAH", 40, 20);
+
+  pdf.setFontSize(11);
+  pdf.text("Nama Sekolah : SMA IHBS Depok", 15, 40);
+  pdf.text("Tanggal      : " + lastResult.time, 15, 47);
+
+  // GAMBAR
+  pdf.addImage(lastResult.image, "PNG", 15, 55, 180, 90);
+
+  // HASIL
+  pdf.text("Hasil Deteksi:", 15, 155);
+  pdf.text(`Label              : ${lastResult.label}`, 15, 165);
+  pdf.text(`Confidence         : ${lastResult.confidence}%`, 15, 172);
+  pdf.text(`Hashing Coefficient: ${lastResult.hc}%`, 15, 179);
+
+  pdf.text("Detail Probabilitas:", 15, 190);
+  pdf.text(lastResult.details, 15, 200);
+
+  // FOOTER
+  pdf.setFontSize(9);
+  pdf.text("Generated by Sampah Classifier AI", 15, 285);
+
+  pdf.save(`laporan-sampah-${Date.now()}.pdf`);
+}
+
+function saveHistory(data) {
+  const history = JSON.parse(localStorage.getItem("history") || "[]");
+  history.unshift(data);
+  localStorage.setItem("history", JSON.stringify(history.slice(0, 20)));
 }
