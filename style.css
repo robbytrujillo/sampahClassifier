@@ -195,3 +195,36 @@ button:active {
 #webcam {
   transform: scaleX(-1);
 }
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.result-table th {
+  background: #2ecc71;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.result-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.result-table tr:last-child td {
+  border-bottom: none;
+}
+
+.result h3,
+.result h4 {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #2c3e50;
+}
