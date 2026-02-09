@@ -167,28 +167,37 @@ freezeBtn.addEventListener("click", async () => {
 
   const ctx = snapshot.getContext("2d");
 
-  // mirror balik supaya sesuai tampilan
+  // UN-MIRROR sebelum capture
   ctx.save();
   ctx.scale(-1, 1);
   ctx.drawImage(webcam, -snapshot.width, 0, snapshot.width, snapshot.height);
   ctx.restore();
 
-  // tampilkan hasil freeze
   preview.src = snapshot.toDataURL("image/png");
   preview.hidden = false;
 
-  // hentikan kamera
   stopCamera();
+
   uploadMode.classList.remove("hidden");
   cameraMode.classList.add("hidden");
 
-  // 🔥 PREDIKSI LANGSUNG DARI CANVAS
-  const predictions = await model.predict(snapshot);
-
+  const predictions = await model.predict(preview);
   showResult(predictions, false);
 
   result.innerHTML += "<br>📸 Kamera dibekukan";
 });
+
+/************************************************
+ * STOP CAMERA
+ ***********************************************/
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+    webcam.srcObject = null;
+  }
+  cameraActive = false;
+  confidenceBuffer = [];
+}
 
 /************************************************
  * HASHING COEFFICIENT
