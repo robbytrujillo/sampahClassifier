@@ -102,34 +102,9 @@ detectBtn.addEventListener("click", async () => {
 /************************************************
  * KAMERA REALTIME
  ***********************************************/
-// cameraBtn.addEventListener("click", async () => {
-//   if (cameraActive) {
-//     stopCamera();
-//     uploadMode.classList.remove("hidden");
-//     cameraMode.classList.add("hidden");
-//     cameraBtn.innerHTML = "📷 Kamera Realtime";
-//     return;
-//   }
-
-//   uploadMode.classList.add("hidden");
-//   cameraMode.classList.remove("hidden");
-
-//   stream = await navigator.mediaDevices.getUserMedia({
-//     video: { facingMode: "environment" },
-//     audio: false,
-//   });
-
-//   webcam.srcObject = stream;
-//   cameraActive = true;
-//   cameraBtn.innerHTML = "⛔ Stop Kamera";
-
-//   loopCamera();
-// });
-
 cameraBtn.addEventListener("click", async () => {
   if (cameraActive) {
     stopCamera();
-    webcam.classList.remove("mirror");
     uploadMode.classList.remove("hidden");
     cameraMode.classList.add("hidden");
     cameraBtn.innerHTML = "📷 Kamera Realtime";
@@ -140,21 +115,13 @@ cameraBtn.addEventListener("click", async () => {
   cameraMode.classList.remove("hidden");
 
   stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "user" }, // ganti 'user' atau 'environment'
+    video: { facingMode: "environment" },
     audio: false,
   });
 
   webcam.srcObject = stream;
   cameraActive = true;
   cameraBtn.innerHTML = "⛔ Stop Kamera";
-
-  // Hanya mirror jika kamera depan
-  const settings = stream.getVideoTracks()[0].getSettings();
-  if (settings.facingMode === "user") {
-    webcam.classList.add("mirror");
-  } else {
-    webcam.classList.remove("mirror");
-  }
 
   loopCamera();
 });
