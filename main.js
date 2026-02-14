@@ -140,7 +140,7 @@ cameraBtn.addEventListener("click", async () => {
   cameraMode.classList.remove("hidden");
 
   stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" }, // pakai kamera belakang
+    video: { facingMode: "user" }, // ganti 'user' atau 'environment'
     audio: false,
   });
 
@@ -148,17 +148,13 @@ cameraBtn.addEventListener("click", async () => {
   cameraActive = true;
   cameraBtn.innerHTML = "⛔ Stop Kamera";
 
-  // 🔥 TARUH DI SINI
+  // Hanya mirror jika kamera depan
   const settings = stream.getVideoTracks()[0].getSettings();
-
   if (settings.facingMode === "user") {
     webcam.classList.add("mirror");
   } else {
     webcam.classList.remove("mirror");
   }
-
-  // Pastikan TIDAK mirror untuk environment
-  webcam.classList.remove("mirror");
 
   loopCamera();
 });
