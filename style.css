@@ -228,3 +228,13 @@ button:active {
   margin-bottom: 5px;
   color: #2c3e50;
 }
+
+/* Kamera default TIDAK mirror */
+#webcam {
+  transform: scaleX(1);
+}
+
+/* Jika ingin mirror hanya untuk selfie */
+.mirror {
+  transform: scaleX(-1);
+}
